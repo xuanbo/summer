@@ -6,7 +6,6 @@ import com.xinqing.summer.mvc.route.Route;
 import com.xinqing.summer.mvc.route.Router;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.FullHttpRequest;
-import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,16 +22,15 @@ public class HttpExecution {
     private final Router router = Summers.summer().router();
 
     public void execute(ChannelHandlerContext ctx, FullHttpRequest req) {
-        HttpMethod method = req.method();
-        String uri = req.uri();
-        boolean keepAlive = HttpUtil.isKeepAlive(req);
-
         Request request = new DefaultRequest(req);
-        Response response = new DefaultResponse(ctx, keepAlive);
+        Response response = new DefaultResponse(ctx, HttpUtil.isKeepAlive(req));
+
+        // 初始化请求上下文
+        RequestContext.setup(request);
 
         Handler handler;
         // 寻找到匹配的handler
-        Route route = router.lookup(method, uri);
+        Route route = router.lookup(request.method(), request.path());
 
         if (route == null) {
             // not found
@@ -47,6 +45,9 @@ public class HttpExecution {
         } catch (Exception e) {
             LOG.error("request handle error", e);
         }
+
+        // 释放请求上下文
+        RequestContext.cleanup();
     }
 
 }

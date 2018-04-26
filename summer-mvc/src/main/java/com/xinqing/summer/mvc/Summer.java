@@ -4,8 +4,11 @@ import com.xinqing.summer.mvc.bootstrap.HttpServer;
 import com.xinqing.summer.mvc.http.handler.Handler;
 import com.xinqing.summer.mvc.route.Router;
 import com.xinqing.summer.mvc.route.RouterImpl;
+import io.netty.handler.codec.http.HttpMethod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Set;
 
 /**
  * bootstrap
@@ -44,6 +47,11 @@ public class Summer {
         return this;
     }
 
+    public Summer route(String path, Set<HttpMethod> methods, Handler handler) {
+        router.route(path, methods, handler);
+        return this;
+    }
+
     public Summer listen(int port) {
         this.port = port;
         return this;
@@ -51,6 +59,7 @@ public class Summer {
 
     public void serve() {
         try {
+            // 启动http server
             server.listenAndServe(port);
         } catch (Exception e) {
             LOG.error("listenAndServe error.", e);

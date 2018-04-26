@@ -38,30 +38,35 @@ public class DefaultResponse implements Response {
     }
 
     @Override
+    public String header(String header) {
+        return headers().get(header);
+    }
+
+    @Override
+    public void header(String header, Object value) {
+        headers().set(header, value);
+    }
+
+    @Override
     public void text(String text) {
-        raw.content().writeBytes(text.getBytes());
-        // http状态码
-        raw.setStatus(HttpResponseStatus.OK);
-        // 设置Content Type
         HttpHeaders headers = headers();
         headers.set(HttpHeaderNames.CONTENT_TYPE, HttpHeaderValues.TEXT_PLAIN);
-        headers.set(HttpHeaderNames.CONTENT_LENGTH, raw.content().readableBytes());
-        if (keepAlive) {
-            headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
-            ctx.write(raw);
-        } else {
-            ctx.write(raw).addListener(ChannelFutureListener.CLOSE);
-        }
+        write(text);
     }
 
     @Override
     public void json(String json) {
-        raw.content().writeBytes(json.getBytes());
-        // http状态码
-        raw.setStatus(HttpResponseStatus.OK);
-        // 设置Content Type
         HttpHeaders headers = headers();
         headers.set(HttpHeaderNames.CONTENT_TYPE, HttpHeaderValues.APPLICATION_JSON);
+        write(json);
+    }
+
+    private void write(String data) {
+        raw.content().writeBytes(data.getBytes());
+        // http状态码
+        raw.setStatus(HttpResponseStatus.OK);
+        HttpHeaders headers = headers();
+        // 设置content-length
         headers.set(HttpHeaderNames.CONTENT_LENGTH, raw.content().readableBytes());
         if (keepAlive) {
             headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);

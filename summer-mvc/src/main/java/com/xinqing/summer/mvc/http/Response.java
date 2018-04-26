@@ -25,6 +25,22 @@ public interface Response {
     HttpHeaders headers();
 
     /**
+     * 获取请求头
+     *
+     * @param header header key
+     * @return header value
+     */
+    String header(String header);
+
+    /**
+     * 设置请求头
+     *
+     * @param header header key
+     * @param value header value
+     */
+    void header(String header, Object value);
+
+    /**
      * 发送文本
      *
      * @param text 文本
