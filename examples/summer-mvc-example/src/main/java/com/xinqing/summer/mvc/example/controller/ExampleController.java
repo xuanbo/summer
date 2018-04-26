@@ -6,6 +6,9 @@ import com.xinqing.summer.mvc.http.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.nio.file.Paths;
+
 /**
  * 例子
  *
@@ -37,4 +40,49 @@ public class ExampleController {
         response.json(JSON.toJSONString(request.paths()));
     }
 
+    public void redirect(Request request, Response response) {
+        response.redirect("/example/text");
+    }
+
+    public void body(Request request, Response response) {
+        response.json(JSON.toJSONString(request.body()));
+    }
+
+    public void file(Request request, Response response) {
+        request.file("file").forEach(fileUpload -> {
+            LOG.info("{}", fileUpload.getFilename());
+            try {
+                // 保存文件到本地
+                fileUpload.renameTo(Paths.get("/file/" + fileUpload.getFilename()).toFile());
+            } catch (IOException e) {
+                LOG.warn("上传失败", e);
+            }
+        });
+        response.text("done");
+    }
+
+    public void parseJson(Request request, Response response) {
+        response.json(request.json(Example.class));
+    }
+}
+
+class Example {
+    private Long id;
+    private String name;
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
 }

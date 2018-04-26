@@ -1,5 +1,6 @@
 package com.xinqing.summer.mvc.http;
 
+import com.xinqing.summer.mvc.json.JsonFactory;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
@@ -48,26 +49,46 @@ public class DefaultResponse implements Response {
     }
 
     @Override
+    public void status(HttpResponseStatus status) {
+        raw.setStatus(status);
+    }
+
+    @Override
     public void text(String text) {
-        HttpHeaders headers = headers();
-        headers.set(HttpHeaderNames.CONTENT_TYPE, HttpHeaderValues.TEXT_PLAIN);
+        header(HttpHeaderNames.CONTENT_TYPE.toString(), ContentType.TEXT_PLAIN_UTF8.value());
         write(text);
     }
 
     @Override
     public void json(String json) {
-        HttpHeaders headers = headers();
-        headers.set(HttpHeaderNames.CONTENT_TYPE, HttpHeaderValues.APPLICATION_JSON);
+        header(HttpHeaderNames.CONTENT_TYPE.toString(), ContentType.APPLICATION_JSON_UTF8.value());
         write(json);
+    }
+
+    @Override
+    public void json(Object obj) {
+        header(HttpHeaderNames.CONTENT_TYPE.toString(), ContentType.APPLICATION_JSON_UTF8.value());
+        write(JsonFactory.get().toJson(obj));
+    }
+
+    @Override
+    public void redirect(String target) {
+        status(HttpResponseStatus.FOUND);
+        header(HttpHeaderNames.LOCATION.toString(), target);
+        end();
     }
 
     private void write(String data) {
         raw.content().writeBytes(data.getBytes());
         // http状态码
-        raw.setStatus(HttpResponseStatus.OK);
-        HttpHeaders headers = headers();
+        status(HttpResponseStatus.OK);
         // 设置content-length
-        headers.set(HttpHeaderNames.CONTENT_LENGTH, raw.content().readableBytes());
+        header(HttpHeaderNames.CONTENT_LENGTH.toString(), raw.content().readableBytes());
+        // 发送response
+        end();
+    }
+
+    private void end() {
         if (keepAlive) {
             headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
             ctx.write(raw);

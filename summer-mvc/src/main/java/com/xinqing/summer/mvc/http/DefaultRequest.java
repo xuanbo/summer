@@ -1,12 +1,22 @@
 package com.xinqing.summer.mvc.http;
 
+import com.xinqing.summer.mvc.exception.BodyException;
+import com.xinqing.summer.mvc.json.JsonFactory;
+import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.http.FullHttpRequest;
+import io.netty.handler.codec.http.HttpHeaderNames;
+import io.netty.handler.codec.http.HttpHeaderValues;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpMethod;
+import io.netty.handler.codec.http.multipart.Attribute;
+import io.netty.handler.codec.http.multipart.FileUpload;
+import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder;
+import io.netty.handler.codec.http.multipart.InterfaceHttpData;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.ArrayList;
@@ -37,6 +47,8 @@ public class DefaultRequest implements Request {
     private String queryString;
     private Map<String, List<String>> params;
     private Map<String, String> paths;
+    private Map<String, String> body;
+    private Map<String, List<FileUpload>> fileUploads;
 
     public DefaultRequest(FullHttpRequest raw) {
         this.raw = raw;
@@ -145,5 +157,83 @@ public class DefaultRequest implements Request {
     @Override
     public String header(String header) {
         return headers().get(header);
+    }
+
+    @Override
+    public ByteBuf content() {
+        return raw.content();
+    }
+
+    @Override
+    public Map<String, String> body() {
+        if (body == null) {
+            HttpPostRequestDecoder decoder = new HttpPostRequestDecoder(raw);
+            List<InterfaceHttpData> data = decoder.getBodyHttpDatas();
+            body = new HashMap<>(data.size());
+            for (InterfaceHttpData httpData : data) {
+                String name = httpData.getName();
+                if (InterfaceHttpData.HttpDataType.Attribute == httpData.getHttpDataType()) {
+                    Attribute attribute = (Attribute) httpData;
+                    try {
+                        // 这里会覆盖相同的name
+                        body.put(name, attribute.getValue());
+                    } catch (IOException e) {
+                        throw new BodyException("parse body error", e);
+                    }
+                }
+            }
+        }
+        return body;
+    }
+
+    @Override
+    public <T> T json(Class<T> requireClazz) {
+        if (isApplicationJson()) {
+            ByteBuf byteBuf = content();
+            byte[] bytes = new byte[byteBuf.readableBytes()];
+            byteBuf.readBytes(bytes);
+            return JsonFactory.get().parseJson(bytes, requireClazz);
+        }
+        return null;
+    }
+
+    @Override
+    public Map<String, List<FileUpload>> files() {
+        if (fileUploads == null) {
+            HttpPostRequestDecoder decoder = new HttpPostRequestDecoder(raw);
+            List<InterfaceHttpData> data = decoder.getBodyHttpDatas();
+            if (decoder.isMultipart()) {
+                body = new HashMap<>(data.size());
+                fileUploads = new HashMap<>(data.size());
+                for (InterfaceHttpData httpData : data) {
+                    String name = httpData.getName();
+                    if (InterfaceHttpData.HttpDataType.Attribute == httpData.getHttpDataType()) {
+                        Attribute attribute = (Attribute) httpData;
+                        try {
+                            // 这里会覆盖相同的name
+                            body.put(name, attribute.getValue());
+                        } catch (IOException e) {
+                            throw new BodyException("parse body error", e);
+                        }
+                    }
+                    if (InterfaceHttpData.HttpDataType.FileUpload == httpData.getHttpDataType()) {
+                        FileUpload fileUpload = (FileUpload) httpData;
+                        fileUploads.computeIfAbsent(name, v -> new ArrayList<>()).add(fileUpload);
+                    }
+                }
+            } else {
+                fileUploads = Collections.emptyMap();
+            }
+        }
+        return fileUploads;
+    }
+
+    @Override
+    public List<FileUpload> file(String name) {
+        return files().getOrDefault(name, Collections.emptyList());
+    }
+
+    private boolean isApplicationJson() {
+        return HttpHeaderValues.APPLICATION_JSON.toString().equals(header(HttpHeaderNames.CONTENT_TYPE.toString()));
     }
 }

@@ -2,6 +2,7 @@ package com.xinqing.summer.mvc.http;
 
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpHeaders;
+import io.netty.handler.codec.http.HttpResponseStatus;
 
 /**
  * http response
@@ -41,6 +42,13 @@ public interface Response {
     void header(String header, Object value);
 
     /**
+     * 设置http response status
+     *
+     * @param status HttpResponseStatus
+     */
+    void status(HttpResponseStatus status);
+
+    /**
      * 发送文本
      *
      * @param text 文本
@@ -53,5 +61,19 @@ public interface Response {
      * @param json json字符串
      */
     void json(String json);
+
+    /**
+     * 发送json
+     *
+     * @param obj 对象
+     */
+    void json(Object obj);
+
+    /**
+     * 重定向
+     *
+     * @param target 重定向路径
+     */
+    void redirect(String target);
 
 }

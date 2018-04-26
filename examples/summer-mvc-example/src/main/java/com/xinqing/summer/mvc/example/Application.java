@@ -20,6 +20,14 @@ public class Application {
                 .get("/example/:id", controller::path)
                 // 精确匹配/example/:11
                 .get("/example/:11", controller::path)
+                // 重定向
+                .get("/example/redirect", controller::redirect)
+                // 解析body，无法解析application/json
+                .post("/example/body", controller::body)
+                // 解析file
+                .post("/example/file", controller::file)
+                // 解析json
+                .post("/example/parseJson", controller::parseJson)
                 .listen(9000)
                 .serve();
     }

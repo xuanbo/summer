@@ -1,7 +1,9 @@
 package com.xinqing.summer.mvc.http;
 
+import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpMethod;
+import io.netty.handler.codec.http.multipart.FileUpload;
 
 import java.util.List;
 import java.util.Map;
@@ -99,5 +101,43 @@ public interface Request {
      * @return header value
      */
     String header(String header);
+
+    /**
+     * 获取http request body内容
+     *
+     * @return ByteBuf
+     */
+    ByteBuf content();
+
+    /**
+     * 获取http body中的内容，会覆盖相同的name，不支持application/json
+     *
+     * @return Map<String, String>
+     */
+    Map<String, String> body();
+
+    /**
+     * 当请求头为application/json时，可以获取将body转为需要对象
+     *
+     * @param requireClazz 将body转为需要对象
+     * @param <T> T
+     * @return T
+     */
+    <T> T json(Class<T> requireClazz);
+
+    /**
+     * 文件上传
+     *
+     * @return Map<String, List<FileUpload>>
+     */
+    Map<String, List<FileUpload>> files();
+
+    /**
+     * 文件上传
+     *
+     * @param name the name of the parameter
+     * @return List<FileUpload>
+     */
+    List<FileUpload> file(String name);
 
 }
