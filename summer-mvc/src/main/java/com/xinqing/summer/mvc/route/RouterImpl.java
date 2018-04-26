@@ -2,6 +2,8 @@ package com.xinqing.summer.mvc.route;
 
 import com.xinqing.summer.mvc.exception.RouteException;
 import com.xinqing.summer.mvc.http.RequestContext;
+import com.xinqing.summer.mvc.http.handler.DefaultFailureHandler;
+import com.xinqing.summer.mvc.http.handler.FailureHandler;
 import com.xinqing.summer.mvc.http.handler.Handler;
 import com.xinqing.summer.mvc.http.handler.NotFoundHandler;
 import com.xinqing.summer.mvc.util.PathMatcher;
@@ -46,6 +48,8 @@ public class RouterImpl implements Router {
      */
     private Handler notFoundHandler = new NotFoundHandler();
 
+    private FailureHandler failureHandler = new DefaultFailureHandler();
+
     @Override
     public void get(String path, Handler handler) {
         route(path, HttpMethod.GET, handler);
@@ -83,6 +87,19 @@ public class RouterImpl implements Router {
     @Override
     public Handler notFound() {
         return notFoundHandler;
+    }
+
+    @Override
+    public void failureHandler(FailureHandler failureHandler) {
+        if (failureHandler == null) {
+            throw new NullPointerException();
+        }
+        this.failureHandler = failureHandler;
+    }
+
+    @Override
+    public FailureHandler failureHandler() {
+        return failureHandler;
     }
 
     @Override

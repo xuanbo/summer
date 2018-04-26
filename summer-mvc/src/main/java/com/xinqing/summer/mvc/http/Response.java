@@ -49,6 +49,13 @@ public interface Response {
     void status(HttpResponseStatus status);
 
     /**
+     * 获取http response status
+     *
+     * @return HttpResponseStatus
+     */
+    HttpResponseStatus status();
+
+    /**
      * 发送文本
      *
      * @param text 文本

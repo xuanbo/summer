@@ -1,5 +1,6 @@
 package com.xinqing.summer.mvc.route;
 
+import com.xinqing.summer.mvc.http.handler.FailureHandler;
 import com.xinqing.summer.mvc.http.handler.Handler;
 import io.netty.handler.codec.http.HttpMethod;
 
@@ -64,6 +65,20 @@ public interface Router {
      * @return http handler
      */
     Handler notFound();
+
+    /**
+     * 设置失败处理
+     *
+     * @param failureHandler FailureHandler
+     */
+    void failureHandler(FailureHandler failureHandler);
+
+    /**
+     * 获取失败处理
+     *
+     * @return FailureHandler
+     */
+    FailureHandler failureHandler();
 
     /**
      * 路由匹配

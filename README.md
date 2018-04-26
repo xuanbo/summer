@@ -18,7 +18,7 @@ public class Application {
 }
 ```
 
-## router
+* custom
 
 ```java
 public class Application {
@@ -28,17 +28,48 @@ public class Application {
 
         Summer summer = Summers.summer();
 
-        // 获取路由对象
         Router router = summer.router();
-        // 自定义notFound
+
+        // custom notFound handler
         router.notFound((request, response) -> response.text("404"));
-        // 注册路由
+
+        // custom failure handler
+        router.failureHandler((request, response, t) -> response.text("500"));
+
+        // register routes
         router.get("/example/text", controller::text);
         router.get("/example/json", controller::json);
 
-        // listenAndServe
+        // http server listen on 9000 and serve
         summer.listen(9000).serve();
     }
 
 }
 ```
+
+## About
+
+### request
+
+* uri
+* path
+* queryString
+* parameters
+* path variables
+* http method
+* http header
+* http body
+* http body json
+* multipart file
+
+### response
+
+* http header
+* http status
+* send text
+* send json
+* redirect
+
+## Examples
+
+[Here](https://github.com/xuanbo/summer/tree/master/examples)

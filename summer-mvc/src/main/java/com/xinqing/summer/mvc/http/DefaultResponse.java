@@ -54,6 +54,11 @@ public class DefaultResponse implements Response {
     }
 
     @Override
+    public HttpResponseStatus status() {
+        return raw.status();
+    }
+
+    @Override
     public void text(String text) {
         header(HttpHeaderNames.CONTENT_TYPE.toString(), ContentType.TEXT_PLAIN_UTF8.value());
         write(text);

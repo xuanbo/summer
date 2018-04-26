@@ -44,6 +44,8 @@ public class HttpExecution {
             handler.handle(request, response);
         } catch (Exception e) {
             LOG.error("request handle error", e);
+            // 异常处理
+            router.failureHandler().handle(request, response, e);
         }
 
         // 释放请求上下文
