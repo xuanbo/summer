@@ -53,7 +53,7 @@ public class ExampleController {
             LOG.info("{}", fileUpload.getFilename());
             try {
                 // 保存文件到本地
-                fileUpload.renameTo(Paths.get("/file/" + fileUpload.getFilename()).toFile());
+                    fileUpload.renameTo(Paths.get("/file/" + fileUpload.getFilename()).toFile());
             } catch (IOException e) {
                 LOG.warn("上传失败", e);
             }
@@ -63,6 +63,15 @@ public class ExampleController {
 
     public void parseJson(Request request, Response response) {
         response.json(request.json(Example.class));
+    }
+
+    public void sendFile(Request request, Response response) {
+        try {
+            response.sendFile(Paths.get("/photo/test.jpg").toFile());
+        } catch (IOException e) {
+            LOG.error("send file error", e);
+            response.text("send file error");
+        }
     }
 }
 

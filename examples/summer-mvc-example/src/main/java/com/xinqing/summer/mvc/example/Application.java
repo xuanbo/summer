@@ -28,6 +28,8 @@ public class Application {
                 .post("/example/file", controller::file)
                 // 解析json
                 .post("/example/parseJson", controller::parseJson)
+                // 发送文件
+                .get("/example/sendFile", controller::sendFile)
                 .listen(9000)
                 .serve();
     }

@@ -1,15 +1,33 @@
 package com.xinqing.summer.mvc.http;
 
 import com.xinqing.summer.mvc.json.JsonFactory;
+import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelProgressiveFuture;
+import io.netty.channel.ChannelProgressiveFutureListener;
+import io.netty.channel.DefaultFileRegion;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
+import io.netty.handler.codec.http.DefaultHttpResponse;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpHeaderValues;
 import io.netty.handler.codec.http.HttpHeaders;
+import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.HttpUtil;
 import io.netty.handler.codec.http.HttpVersion;
+import io.netty.handler.codec.http.LastHttpContent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.activation.MimetypesFileTypeMap;
+import java.io.File;
+import java.io.IOException;
+import java.io.RandomAccessFile;
+
+import static io.netty.handler.codec.http.HttpResponseStatus.OK;
+import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 /**
  * default http response
@@ -17,6 +35,8 @@ import io.netty.handler.codec.http.HttpVersion;
  * Created by xuan on 2018/4/17
  */
 public class DefaultResponse implements Response {
+
+    private static final Logger LOG = LoggerFactory.getLogger(DefaultResponse.class);
 
     private final FullHttpResponse raw;
     private final ChannelHandlerContext ctx;
@@ -39,16 +59,6 @@ public class DefaultResponse implements Response {
     }
 
     @Override
-    public String header(String header) {
-        return headers().get(header);
-    }
-
-    @Override
-    public void header(String header, Object value) {
-        headers().set(header, value);
-    }
-
-    @Override
     public void status(HttpResponseStatus status) {
         raw.setStatus(status);
     }
@@ -59,37 +69,97 @@ public class DefaultResponse implements Response {
     }
 
     @Override
+    public void write(byte[] bytes) {
+        raw.content().writeBytes(bytes);
+        // 设置content-length
+        headers().set(HttpHeaderNames.CONTENT_LENGTH, raw.content().readableBytes());
+        // 发送response
+        end();
+    }
+
+    @Override
     public void text(String text) {
-        header(HttpHeaderNames.CONTENT_TYPE.toString(), ContentType.TEXT_PLAIN_UTF8.value());
-        write(text);
+        headers().set(HttpHeaderNames.CONTENT_TYPE, ContentType.TEXT_PLAIN_UTF8.value());
+        write(text.getBytes());
     }
 
     @Override
     public void json(String json) {
-        header(HttpHeaderNames.CONTENT_TYPE.toString(), ContentType.APPLICATION_JSON_UTF8.value());
-        write(json);
+        headers().set(HttpHeaderNames.CONTENT_TYPE, ContentType.APPLICATION_JSON_UTF8.value());
+        write(json.getBytes());
     }
 
     @Override
     public void json(Object obj) {
-        header(HttpHeaderNames.CONTENT_TYPE.toString(), ContentType.APPLICATION_JSON_UTF8.value());
-        write(JsonFactory.get().toJson(obj));
+        headers().set(HttpHeaderNames.CONTENT_TYPE, ContentType.APPLICATION_JSON_UTF8.value());
+        write(JsonFactory.get().toJson(obj).getBytes());
+    }
+
+    @Override
+    public void sendFile(File file) throws IOException {
+        sendFile(null, file);
+    }
+
+    @Override
+    public void sendFile(HttpHeaders headers, File file) throws IOException {
+        RandomAccessFile raf = new RandomAccessFile(file, "r");
+
+        long fileLength = raf.length();
+
+        // if you write a FullHttp* message it contains the whole body of the message
+        HttpResponse response;
+        if (headers == null) {
+            response = new DefaultHttpResponse(HTTP_1_1, OK);
+        } else {
+            response = new DefaultHttpResponse(HTTP_1_1, OK, headers);
+        }
+
+        // content-length
+        HttpUtil.setContentLength(response, fileLength);
+        // content-type
+        setContentType(response, file);
+        // keep alive
+        HttpUtil.setKeepAlive(response, keepAlive);
+
+        // Write the initial line and the header.
+        ctx.write(response);
+
+        // Write the content.
+        ChannelFuture sendFileFuture = ctx.write(new DefaultFileRegion(raf.getChannel(), 0, fileLength), ctx.newProgressivePromise());
+        // Write the end marker.
+        ChannelFuture lastContentFuture = ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
+
+        sendFileFuture.addListener(new ChannelProgressiveFutureListener() {
+            @Override
+            public void operationComplete(ChannelProgressiveFuture future) {
+                LOG.debug("Transfer complete");
+            }
+
+            @Override
+            public void operationProgressed(ChannelProgressiveFuture future, long progress, long total) {
+                // total unknown
+                if (total < 0) {
+                    LOG.error("Transfer progress: {}", progress);
+                } else {
+                    LOG.debug("Transfer progress: {} / {}", progress, total);
+                }
+            }
+        });
+
+        // Decide whether to close the connection or not.
+        if (!keepAlive) {
+            // Close the connection when the whole content is written out.
+            lastContentFuture.addListener(ChannelFutureListener.CLOSE);
+        }
     }
 
     @Override
     public void redirect(String target) {
+        // 302
         status(HttpResponseStatus.FOUND);
-        header(HttpHeaderNames.LOCATION.toString(), target);
-        end();
-    }
-
-    private void write(String data) {
-        raw.content().writeBytes(data.getBytes());
-        // http状态码
-        status(HttpResponseStatus.OK);
-        // 设置content-length
-        header(HttpHeaderNames.CONTENT_LENGTH.toString(), raw.content().readableBytes());
-        // 发送response
+        // Location
+        headers().set(HttpHeaderNames.LOCATION, target);
+        // send response
         end();
     }
 
@@ -100,6 +170,11 @@ public class DefaultResponse implements Response {
         } else {
             ctx.write(raw).addListener(ChannelFutureListener.CLOSE);
         }
+    }
+
+    private void setContentType(HttpResponse response, File file) {
+        MimetypesFileTypeMap mimeTypesMap = new MimetypesFileTypeMap();
+        response.headers().set(HttpHeaderNames.CONTENT_TYPE, mimeTypesMap.getContentType(file.getPath()));
     }
 
 }

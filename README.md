@@ -1,4 +1,6 @@
-## summer
+## Summer Project
+
+Summer is a simple mvc lib base on [Netty4.x](https://github.com/netty/netty)
 
 ### Usage
 
@@ -51,24 +53,56 @@ public class Application {
 
 ### request
 
-* uri
-* path
-* queryString
-* parameters
-* path variables
-* http method
-* http header
-* http body
-* http body json
-* multipart file
+#### Named parameters
+
+As you can see, `:name` is a named parameter. You can get the value of a parameter by `request.paths().get("name")` method.
+
+```
+Pattern: /user/:name
+
+/user/gordon              match
+/user/you                 match
+/user/gordon/profile      no match
+/user/                    no match
+```
+
+**Note:** `:name` name must be [a-zA-Z], otherwise will be matched exactly!
+
+#### Request body
+
+method `request.body()` support `Content-Type`:
+
+* `multipart/form-data`
+* `application/x-www-form-urlencoded`
+
+As for `application/json`, use method `request.json()` instead of.
+
+#### Multipart file
+
+* request.files()
+* request.file(name)
+
+Then you can use `FileUpload` for all operations.
 
 ### response
 
-* http header
-* http status
-* send text
-* send json
-* redirect
+#### Write response
+
+* response.text(text)
+* response.json(json)
+
+`Content-Type`(`text/plain` and `application/json`) will be added.
+
+#### File download
+
+Now, easy to use:
+
+* response.sendFile(file)
+* response.sendFile(header, file)
+
+#### Redirect
+
+`response.redirect(targetUrl)` will set http status `302`, and add `Location` on http response header.
 
 ## Examples
 
