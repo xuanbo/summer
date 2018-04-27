@@ -2,15 +2,24 @@ package com.xinqing.summer.mvc.example;
 
 import com.xinqing.summer.mvc.Summers;
 import com.xinqing.summer.mvc.example.controller.ExampleController;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Hello world!
  */
 public class Application {
 
+    private static final Logger LOG = LoggerFactory.getLogger(Application.class);
+
     public static void main(String[] args) {
         ExampleController controller = new ExampleController();
         Summers.summer()
+                .before("/example/*", (request, response) -> {
+                    LOG.info("before: {}", request.path());
+                    // 放行
+                    return true;
+                })
                 .get("/", controller::text)
                 // 输出文本
                 .get("/example/text", controller::text)

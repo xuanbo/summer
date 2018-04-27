@@ -8,12 +8,15 @@ import java.util.regex.Pattern;
  *
  * Created by xuan on 2018/4/25
  */
-public class PathMatcher {
+public final class PathMatcher {
 
     /**
      * 模式匹配：/user/:variable，其中variable必须为纯字母，否则作为精确匹配
      */
     private static final Pattern PATTERN = Pattern.compile("(/:[a-zA-Z]+)");
+
+    private PathMatcher() {
+    }
 
     /**
      * 路径是否为模式匹配

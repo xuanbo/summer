@@ -1,5 +1,6 @@
 package com.xinqing.summer.mvc.http;
 
+import com.xinqing.summer.mvc.http.handler.Before;
 import com.xinqing.summer.mvc.http.handler.Handler;
 import com.xinqing.summer.mvc.route.Route;
 import com.xinqing.summer.mvc.route.Router;
@@ -8,6 +9,8 @@ import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.List;
 
 /**
  * http执行
@@ -28,12 +31,29 @@ public class HttpExecution {
         Request request = new DefaultRequest(req);
         Response response = new DefaultResponse(ctx, HttpUtil.isKeepAlive(req));
 
+        String path = request.path();
+
         // 初始化请求上下文
         RequestContext.setup(request);
 
+        // 前置拦截
+        List<Before> befores = router.lookup(path);
+        for (Before before : befores) {
+            try {
+                if (!before.doBefore(request, response)) {
+                    // 释放请求上下文
+                    RequestContext.cleanup();
+                    return;
+                }
+            } catch (Exception e) {
+                // 异常处理
+                router.failureHandler().handle(request, response, e);
+            }
+        }
+
         Handler handler;
         // 寻找到匹配的handler
-        Route route = router.lookup(request.method(), request.path());
+        Route route = router.lookup(request.method(), path);
 
         if (route == null) {
             // not found

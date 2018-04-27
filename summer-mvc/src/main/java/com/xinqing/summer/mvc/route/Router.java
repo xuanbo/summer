@@ -1,15 +1,25 @@
 package com.xinqing.summer.mvc.route;
 
+import com.xinqing.summer.mvc.http.handler.Before;
 import com.xinqing.summer.mvc.http.handler.FailureHandler;
 import com.xinqing.summer.mvc.http.handler.Handler;
 import io.netty.handler.codec.http.HttpMethod;
 
+import java.util.List;
 import java.util.Set;
 
 /**
  * Created by xuan on 2018/4/25
  */
 public interface Router {
+
+    /**
+     * 注册前置拦截
+     *
+     * @param ant ant风格，/a/*; /a/**
+     * @param before Before
+     */
+    void before(String ant, Before before);
 
     /**
      * 注册http get handler
@@ -79,6 +89,14 @@ public interface Router {
      * @return FailureHandler
      */
     FailureHandler failureHandler();
+
+    /**
+     * 查询匹配的Filter
+     *
+     * @param path 请求路径
+     * @return List<Before>
+     */
+    List<Before> lookup(String path);
 
     /**
      * 路由匹配

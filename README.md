@@ -11,7 +11,11 @@ public class Application {
 
     public static void main(String[] args) {
         Summers.summer()
-                .get("/index", (request, response) -> response.text("Hello World"))
+                .before("/example/*", (request, response) -> {
+                    log.debug("path: {}", request.path());
+                    // pass
+                    return true;
+                })
                 .get("/example/:id", (request, response) -> response.text(request.paths().get("id")))
                 .listen(9000)
                 .serve();
@@ -68,6 +72,14 @@ Pattern: /user/:name
 
 **Note:** `:name` name must be [a-zA-Z], otherwise will be matched exactly!
 
+#### Before hook
+
+Ant pattern:
+
+* `?` match a character
+* `*` match one or more characters
+* `**` match one or more directories
+
 #### Request body
 
 method `request.body()` support `Content-Type`:
@@ -107,3 +119,10 @@ Now, easy to use:
 ## Examples
 
 [Here](https://github.com/xuanbo/summer/tree/master/examples)
+
+## Thanks
+
+* [netty](https://github.com/netty/netty)
+* [spring-framework](https://github.com/spring-projects/spring-framework)
+* [blade](https://github.com/lets-blade/blade)
+* [shiro](https://github.com/apache/shiro)

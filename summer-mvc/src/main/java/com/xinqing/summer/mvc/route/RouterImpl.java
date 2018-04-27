@@ -2,10 +2,12 @@ package com.xinqing.summer.mvc.route;
 
 import com.xinqing.summer.mvc.exception.RouteException;
 import com.xinqing.summer.mvc.http.RequestContext;
+import com.xinqing.summer.mvc.http.handler.Before;
 import com.xinqing.summer.mvc.http.handler.DefaultFailureHandler;
 import com.xinqing.summer.mvc.http.handler.FailureHandler;
 import com.xinqing.summer.mvc.http.handler.Handler;
 import com.xinqing.summer.mvc.http.handler.NotFoundHandler;
+import com.xinqing.summer.mvc.util.AntMatcher;
 import com.xinqing.summer.mvc.util.PathMatcher;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.util.internal.ConcurrentSet;
@@ -13,8 +15,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -27,6 +32,16 @@ public class RouterImpl implements Router {
     private static final Logger LOG = LoggerFactory.getLogger(RouterImpl.class);
 
     private static final String PATH_START = "/";
+
+    /**
+     * AntMatcher
+     */
+    private final AntMatcher antMatcher = new AntMatcher();
+
+    /**
+     * 前置拦截
+     */
+    private final Map<String, List<Before>> befores = new ConcurrentHashMap<>();
 
     /**
      * 所有的路由信息
@@ -49,6 +64,17 @@ public class RouterImpl implements Router {
     private Handler notFoundHandler = new NotFoundHandler();
 
     private FailureHandler failureHandler = new DefaultFailureHandler();
+
+    @Override
+    public void before(String ant, Before before) {
+        checkPath(ant);
+        if (antMatcher.isPattern(ant)) {
+            LOG.info("before '{}' onto {}", ant, before);
+            befores.computeIfAbsent(ant, v -> new ArrayList<>()).add(before);
+        } else {
+            throw new RouteException("'" + ant + "' is not ant pattern");
+        }
+    }
 
     @Override
     public void get(String path, Handler handler) {
@@ -100,6 +126,19 @@ public class RouterImpl implements Router {
     @Override
     public FailureHandler failureHandler() {
         return failureHandler;
+    }
+
+    @Override
+    public List<Before> lookup(String path) {
+        for (Map.Entry<String, List<Before>> entry : befores.entrySet()) {
+            String ant = entry.getKey();
+            if (antMatcher.match(ant, path)) {
+                LOG.debug("request '{}' matched by before '{}'", path, ant);
+                return entry.getValue();
+            }
+        }
+        LOG.debug("request '{}' no befores found", path);
+        return Collections.emptyList();
     }
 
     @Override

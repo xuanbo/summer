@@ -4,6 +4,7 @@ import com.xinqing.summer.mvc.bootstrap.HttpPipelineInitializer;
 import com.xinqing.summer.mvc.bootstrap.HttpServer;
 import com.xinqing.summer.mvc.bootstrap.HttpServerHandler;
 import com.xinqing.summer.mvc.http.HttpExecution;
+import com.xinqing.summer.mvc.http.handler.Before;
 import com.xinqing.summer.mvc.http.handler.Handler;
 import com.xinqing.summer.mvc.route.Router;
 import com.xinqing.summer.mvc.route.RouterImpl;
@@ -27,6 +28,11 @@ public class Summer {
 
     public Router router() {
         return router;
+    }
+
+    public Summer before(String ant, Before before) {
+        router.before(ant, before);
+        return this;
     }
 
     public Summer get(String path, Handler handler) {
