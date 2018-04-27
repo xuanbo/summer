@@ -1,6 +1,9 @@
 package com.xinqing.summer.mvc;
 
+import com.xinqing.summer.mvc.bootstrap.HttpPipelineInitializer;
 import com.xinqing.summer.mvc.bootstrap.HttpServer;
+import com.xinqing.summer.mvc.bootstrap.HttpServerHandler;
+import com.xinqing.summer.mvc.http.HttpExecution;
 import com.xinqing.summer.mvc.http.handler.Handler;
 import com.xinqing.summer.mvc.route.Router;
 import com.xinqing.summer.mvc.route.RouterImpl;
@@ -19,7 +22,6 @@ public class Summer {
 
     private static final Logger LOG = LoggerFactory.getLogger(Summer.class);
 
-    private final HttpServer server = new HttpServer();
     private final Router router = new RouterImpl();
     private int port = 9000;
 
@@ -60,10 +62,17 @@ public class Summer {
     public void serve() {
         try {
             // 启动http server
-            server.listenAndServe(port);
+            server().listenAndServe(port);
         } catch (Exception e) {
             LOG.error("listenAndServe error.", e);
         }
+    }
+
+    private HttpServer server() {
+        HttpExecution execution = new HttpExecution(router);
+        HttpServerHandler httpServerHandler = new HttpServerHandler(execution);
+        HttpPipelineInitializer httpPipelineInitializer = new HttpPipelineInitializer(httpServerHandler);
+        return new HttpServer(httpPipelineInitializer);
     }
 
 }

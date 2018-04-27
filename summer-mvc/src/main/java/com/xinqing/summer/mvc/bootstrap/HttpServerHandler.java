@@ -18,7 +18,11 @@ public class HttpServerHandler extends SimpleChannelInboundHandler<FullHttpReque
 
     private static final Logger LOG = LoggerFactory.getLogger(HttpServerHandler.class);
 
-    private final HttpExecution execution = new HttpExecution();
+    private final HttpExecution execution;
+
+    public HttpServerHandler(HttpExecution execution) {
+        this.execution = execution;
+    }
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, FullHttpRequest request) {

@@ -164,9 +164,9 @@ public class DefaultResponse implements Response {
     private void end() {
         if (keepAlive) {
             headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
-            ctx.write(raw);
+            ctx.writeAndFlush(raw);
         } else {
-            ctx.write(raw).addListener(ChannelFutureListener.CLOSE);
+            ctx.writeAndFlush(raw).addListener(ChannelFutureListener.CLOSE);
         }
     }
 

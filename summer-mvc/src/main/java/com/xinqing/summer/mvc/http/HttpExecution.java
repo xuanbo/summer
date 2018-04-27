@@ -1,6 +1,5 @@
 package com.xinqing.summer.mvc.http;
 
-import com.xinqing.summer.mvc.Summers;
 import com.xinqing.summer.mvc.http.handler.Handler;
 import com.xinqing.summer.mvc.route.Route;
 import com.xinqing.summer.mvc.route.Router;
@@ -19,7 +18,11 @@ public class HttpExecution {
 
     private static final Logger LOG = LoggerFactory.getLogger(HttpExecution.class);
 
-    private final Router router = Summers.summer().router();
+    private final Router router;
+
+    public HttpExecution(Router router) {
+        this.router = router;
+    }
 
     public void execute(ChannelHandlerContext ctx, FullHttpRequest req) {
         Request request = new DefaultRequest(req);

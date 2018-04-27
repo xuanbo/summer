@@ -19,6 +19,12 @@ public class HttpPipelineInitializer extends ChannelInitializer<SocketChannel> {
 
     private static final int MAX_SIZE = 65536;
 
+    private final HttpServerHandler httpServerHandler;
+
+    public HttpPipelineInitializer(HttpServerHandler httpServerHandler) {
+        this.httpServerHandler = httpServerHandler;
+    }
+
     @Override
     protected void initChannel(SocketChannel channel) {
         ChannelPipeline pipeline = channel.pipeline();
@@ -29,6 +35,6 @@ public class HttpPipelineInitializer extends ChannelInitializer<SocketChannel> {
         // HTTP compression
         pipeline.addLast(new HttpContentCompressor());
         pipeline.addLast(new ChunkedWriteHandler());
-        pipeline.addLast(new HttpServerHandler());
+        pipeline.addLast(httpServerHandler);
     }
 }

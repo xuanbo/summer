@@ -19,9 +19,10 @@ public class HttpServer {
 
     private volatile boolean running;
 
-    private HttpPipelineInitializer initializer = new HttpPipelineInitializer();
+    private final HttpPipelineInitializer httpPipelineInitializer;
 
-    public HttpServer() {
+    public HttpServer(HttpPipelineInitializer httpPipelineInitializer) {
+        this.httpPipelineInitializer = httpPipelineInitializer;
     }
 
     public void listenAndServe(int port) throws Exception {
@@ -31,7 +32,7 @@ public class HttpServer {
             ServerBootstrap bootstrap = new ServerBootstrap();
             bootstrap.group(bossGroup, workerGroup)
                     .channel(NioServerSocketChannel.class)
-                    .childHandler(initializer);
+                    .childHandler(httpPipelineInitializer);
 
             Channel ch = bootstrap.bind(port).sync().channel();
 
@@ -50,7 +51,4 @@ public class HttpServer {
         return running;
     }
 
-    public void setInitializer(HttpPipelineInitializer initializer) {
-        this.initializer = initializer;
-    }
 }
