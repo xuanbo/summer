@@ -6,10 +6,10 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelProgressiveFuture;
 import io.netty.channel.ChannelProgressiveFutureListener;
-import io.netty.channel.DefaultFileRegion;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.DefaultHttpResponse;
 import io.netty.handler.codec.http.FullHttpResponse;
+import io.netty.handler.codec.http.HttpChunkedInput;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpHeaderValues;
 import io.netty.handler.codec.http.HttpHeaders;
@@ -17,7 +17,7 @@ import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpUtil;
 import io.netty.handler.codec.http.HttpVersion;
-import io.netty.handler.codec.http.LastHttpContent;
+import io.netty.handler.stream.ChunkedFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,9 +25,6 @@ import javax.activation.MimetypesFileTypeMap;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-
-import static io.netty.handler.codec.http.HttpResponseStatus.OK;
-import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 /**
  * default http response
@@ -109,9 +106,9 @@ public class DefaultResponse implements Response {
         // if you write a FullHttp* message it contains the whole body of the message
         HttpResponse response;
         if (headers == null) {
-            response = new DefaultHttpResponse(HTTP_1_1, OK);
+            response = new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
         } else {
-            response = new DefaultHttpResponse(HTTP_1_1, OK, headers);
+            response = new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK, headers);
         }
 
         // content-length
@@ -119,17 +116,18 @@ public class DefaultResponse implements Response {
         // content-type
         setContentType(response, file);
         // keep alive
-        HttpUtil.setKeepAlive(response, keepAlive);
+        if (keepAlive) {
+            response.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
+        }
 
         // Write the initial line and the header.
         ctx.write(response);
 
         // Write the content.
-        ChannelFuture sendFileFuture = ctx.write(new DefaultFileRegion(raf.getChannel(), 0, fileLength), ctx.newProgressivePromise());
-        // Write the end marker.
-        ChannelFuture lastContentFuture = ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
+        // HttpChunkedInput will write the end marker (LastHttpContent) for us.
+        ChannelFuture future = ctx.writeAndFlush(new HttpChunkedInput(new ChunkedFile(raf)), ctx.newProgressivePromise());
 
-        sendFileFuture.addListener(new ChannelProgressiveFutureListener() {
+        future.addListener(new ChannelProgressiveFutureListener() {
             @Override
             public void operationComplete(ChannelProgressiveFuture future) {
                 LOG.debug("Transfer complete");
@@ -139,9 +137,9 @@ public class DefaultResponse implements Response {
             public void operationProgressed(ChannelProgressiveFuture future, long progress, long total) {
                 // total unknown
                 if (total < 0) {
-                    LOG.error("Transfer progress: {}", progress);
+                    LOG.error("Transfer progress: {}, total: {}", progress, total);
                 } else {
-                    LOG.debug("Transfer progress: {} / {}", progress, total);
+                    LOG.trace("Transfer progress: {} / {}", progress, total);
                 }
             }
         });
@@ -149,7 +147,7 @@ public class DefaultResponse implements Response {
         // Decide whether to close the connection or not.
         if (!keepAlive) {
             // Close the connection when the whole content is written out.
-            lastContentFuture.addListener(ChannelFutureListener.CLOSE);
+            future.addListener(ChannelFutureListener.CLOSE);
         }
     }
 

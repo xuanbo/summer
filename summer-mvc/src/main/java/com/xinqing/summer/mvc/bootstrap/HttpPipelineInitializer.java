@@ -4,6 +4,7 @@ import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
+import io.netty.handler.codec.http.HttpContentCompressor;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.stream.ChunkedWriteHandler;
@@ -25,6 +26,8 @@ public class HttpPipelineInitializer extends ChannelInitializer<SocketChannel> {
         pipeline.addLast(new HttpServerCodec());
         // aggregates an HttpMessage and its following HttpContent into a single FullHttpRequest
         pipeline.addLast(new HttpObjectAggregator(MAX_SIZE));
+        // HTTP compression
+        pipeline.addLast(new HttpContentCompressor());
         pipeline.addLast(new ChunkedWriteHandler());
         pipeline.addLast(new HttpServerHandler());
     }

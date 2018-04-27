@@ -1,8 +1,8 @@
-## Summer Project
+# Summer Project
 
-Summer is a simple mvc lib base on [Netty4.x](https://github.com/netty/netty)
+Summer is a simple mvc lib base on [Netty4.x](https://github.com/netty/netty) for **study!!!**
 
-### Usage
+## Usage
 
 * quick start
 
@@ -51,7 +51,7 @@ public class Application {
 
 ## About
 
-### request
+### Request
 
 #### Named parameters
 
@@ -72,8 +72,8 @@ Pattern: /user/:name
 
 method `request.body()` support `Content-Type`:
 
-* `multipart/form-data`
-* `application/x-www-form-urlencoded`
+* multipart/form-data
+* application/x-www-form-urlencoded
 
 As for `application/json`, use method `request.json()` instead of.
 
@@ -84,7 +84,7 @@ As for `application/json`, use method `request.json()` instead of.
 
 Then you can use `FileUpload` for all operations.
 
-### response
+### Response
 
 #### Write response
 
