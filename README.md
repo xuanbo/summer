@@ -119,6 +119,18 @@ Now, easy to use:
 
 `response.redirect(targetUrl)` will set http status `302`, and add `Location` on http response header.
 
+#### Static resource
+
+```
+Summers.summer()
+        // static resource
+        .staticFile("/static", "/developer/Code/summer")
+        .listen(9000)
+        .serve();
+```
+
+For example, request `http://ip:9000/static/some.txt` will be mapped to the local file path: `/developer/Code/summer/some.txt`
+
 ## Examples
 
 [Here](https://github.com/xuanbo/summer/tree/master/examples)

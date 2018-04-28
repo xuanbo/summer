@@ -9,9 +9,9 @@ import com.xinqing.summer.mvc.http.handler.Handler;
 import com.xinqing.summer.mvc.http.handler.NotFoundHandler;
 import com.xinqing.summer.mvc.util.AntMatcher;
 import com.xinqing.summer.mvc.util.PathMatcher;
+import com.xinqing.summer.mvc.util.RouteUtils;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.util.internal.ConcurrentSet;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,7 +67,7 @@ public class RouterImpl implements Router {
 
     @Override
     public void before(String ant, Before before) {
-        checkPath(ant);
+        RouteUtils.checkPath(ant);
         if (antMatcher.isPattern(ant)) {
             LOG.info("before '{}' onto {}", ant, before);
             befores.computeIfAbsent(ant, v -> new ArrayList<>()).add(before);
@@ -98,7 +98,7 @@ public class RouterImpl implements Router {
 
     @Override
     public void route(String path, Set<HttpMethod> methods, Handler handler) {
-        checkPath(path);
+        RouteUtils.checkPath(path);
         addRoute(routes, new Route(path, methods, handler));
     }
 
@@ -161,24 +161,6 @@ public class RouterImpl implements Router {
         Set<HttpMethod> methods = new HashSet<>();
         methods.add(method);
         route(path, methods, handler);
-    }
-
-    /**
-     * 检查请求路径是否合法，必须以'/'开头，且不能以'/'结尾
-     * 例如：'/a/b'是合法的；'/a/b/'不合法
-     * 特别地：'/'是合法的
-     *
-     * @param path 请求路径
-     */
-    private void checkPath(String path) {
-        // 必须以'/'开头
-        if (!StringUtils.startsWith(path, PATH_START)) {
-            throw new RouteException("path '" + path + "' must start with: " + PATH_START);
-        }
-        // 不能以'/'结尾
-        if (StringUtils.length(path) > PATH_START.length() && StringUtils.endsWith(path, PATH_START)) {
-            throw new RouteException("path '" + path + "' should not end with: " + PATH_START);
-        }
     }
 
     private void addRoute(Map<String, Route> routes, Route route) {

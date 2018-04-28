@@ -9,6 +9,8 @@ import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.stream.ChunkedWriteHandler;
 
+import java.util.List;
+
 /**
  * Http Pipeline
  *
@@ -19,10 +21,13 @@ public class HttpPipelineInitializer extends ChannelInitializer<SocketChannel> {
 
     private static final int MAX_SIZE = 65536;
 
-    private final HttpServerHandler httpServerHandler;
+    /**
+     * 自定义handlers
+     */
+    private List<ChannelHandler> handlers;
 
-    public HttpPipelineInitializer(HttpServerHandler httpServerHandler) {
-        this.httpServerHandler = httpServerHandler;
+    public HttpPipelineInitializer(List<ChannelHandler> handlers) {
+        this.handlers = handlers;
     }
 
     @Override
@@ -35,6 +40,9 @@ public class HttpPipelineInitializer extends ChannelInitializer<SocketChannel> {
         // HTTP compression
         pipeline.addLast(new HttpContentCompressor());
         pipeline.addLast(new ChunkedWriteHandler());
-        pipeline.addLast(httpServerHandler);
+        // custom handlers
+        for (ChannelHandler handler : handlers) {
+            pipeline.addLast(handler);
+        }
     }
 }

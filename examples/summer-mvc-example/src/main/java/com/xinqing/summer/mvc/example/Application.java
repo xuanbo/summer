@@ -39,6 +39,8 @@ public class Application {
                 .post("/example/parseJson", controller::parseJson)
                 // 发送文件
                 .get("/example/sendFile", controller::sendFile)
+                // 静态资源
+                .staticFile("/", "/developer/Code/summer")
                 .listen(9000)
                 .serve();
     }

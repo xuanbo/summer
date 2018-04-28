@@ -119,6 +119,18 @@ Ant风格:
 
 `response.redirect(targetUrl)`将会设置http状态码为`302`，并添加`Location`到响应头。
 
+#### 静态资源
+
+```
+Summers.summer()
+        // 静态资源
+        .staticFile("/static", "/developer/Code/summer")
+        .listen(9000)
+        .serve();
+```
+
+例如，`http://ip:9000/static/some.txt`将会被映射为本地文件路径`/developer/Code/summer/some.txt`
+
 ## 例子
 
 [这里](https://github.com/xuanbo/summer/tree/master/examples)

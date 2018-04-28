@@ -3,15 +3,19 @@ package com.xinqing.summer.mvc;
 import com.xinqing.summer.mvc.bootstrap.HttpPipelineInitializer;
 import com.xinqing.summer.mvc.bootstrap.HttpServer;
 import com.xinqing.summer.mvc.bootstrap.HttpServerHandler;
+import com.xinqing.summer.mvc.bootstrap.HttpStaticFileHandler;
 import com.xinqing.summer.mvc.http.HttpExecution;
 import com.xinqing.summer.mvc.http.handler.Before;
 import com.xinqing.summer.mvc.http.handler.Handler;
 import com.xinqing.summer.mvc.route.Router;
 import com.xinqing.summer.mvc.route.RouterImpl;
+import io.netty.channel.ChannelHandler;
 import io.netty.handler.codec.http.HttpMethod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -25,6 +29,16 @@ public class Summer {
 
     private final Router router = new RouterImpl();
     private int port = 9000;
+
+    /**
+     * 处理http静态资源
+     */
+    private HttpStaticFileHandler httpStaticFileHandler;
+
+    /**
+     * 处理业务http请求
+     */
+    private HttpServerHandler httpServerHandler = new HttpServerHandler(new HttpExecution(router));
 
     public Router router() {
         return router;
@@ -60,6 +74,12 @@ public class Summer {
         return this;
     }
 
+    public Summer staticFile(String staticPrefix, String staticPath) {
+        httpStaticFileHandler = new HttpStaticFileHandler(staticPrefix, staticPath);
+        LOG.info("static resource: '{}'", staticPrefix);
+        return this;
+    }
+
     public Summer listen(int port) {
         this.port = port;
         return this;
@@ -75,10 +95,18 @@ public class Summer {
     }
 
     private HttpServer server() {
-        HttpExecution execution = new HttpExecution(router);
-        HttpServerHandler httpServerHandler = new HttpServerHandler(execution);
-        HttpPipelineInitializer httpPipelineInitializer = new HttpPipelineInitializer(httpServerHandler);
-        return new HttpServer(httpPipelineInitializer);
+        return new HttpServer(new HttpPipelineInitializer(handlers()));
+    }
+
+    private List<ChannelHandler> handlers() {
+        List<ChannelHandler> handlers = new ArrayList<>();
+        // 静态资源
+        if (httpStaticFileHandler != null) {
+            handlers.add(httpStaticFileHandler);
+        }
+        // 业务http
+        handlers.add(httpServerHandler);
+        return handlers;
     }
 
 }
