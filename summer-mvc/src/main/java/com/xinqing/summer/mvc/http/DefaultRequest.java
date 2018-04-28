@@ -45,12 +45,28 @@ public class DefaultRequest implements Request {
     private String uri;
     private String path;
     private String queryString;
+
+    /**
+     * 请求路径上queryString中提取的参数
+     */
     private Map<String, List<String>> params;
+
+    /**
+     * 模式匹配到的路径参数
+     */
     private Map<String, String> paths;
+
+    /**
+     * request body提取的参数，无法提取文件
+     */
     private Map<String, String> body;
+
+    /**
+     * request body中提取的文件对象
+     */
     private Map<String, List<FileUpload>> fileUploads;
 
-    public DefaultRequest(FullHttpRequest raw) {
+    DefaultRequest(FullHttpRequest raw) {
         this.raw = raw;
     }
 

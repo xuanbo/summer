@@ -45,7 +45,7 @@ public interface Response {
     /**
      * 字节数组写入响应
      *
-     * @param bytes
+     * @param bytes 字节数组
      */
     void write(byte[] bytes);
 
@@ -71,23 +71,12 @@ public interface Response {
     void json(Object obj);
 
     /**
-     * 发送文件
-     * @see Response#sendFile(io.netty.handler.codec.http.HttpHeaders, java.io.File)
+     * 发送文件，如果没有手动设置Content-Type，则会自动根据文件类型猜测Content-Type并设置
      *
      * @param file 文件
      * @throws IOException IOException
      */
     void sendFile(File file) throws IOException;
-
-    /**
-     * 发送文件时指定http header
-     *
-     *
-     * @param headers HttpHeaders
-     * @param file 文件
-     * @throws IOException IOException
-     */
-    void sendFile(HttpHeaders headers, File file) throws IOException;
 
     /**
      * 重定向

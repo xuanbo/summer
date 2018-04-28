@@ -1,6 +1,7 @@
 package com.xinqing.summer.mvc.example.controller;
 
 import com.alibaba.fastjson.JSON;
+import com.xinqing.summer.mvc.domain.Result;
 import com.xinqing.summer.mvc.http.Request;
 import com.xinqing.summer.mvc.http.Response;
 import org.slf4j.Logger;
@@ -31,7 +32,7 @@ public class ExampleController {
     }
 
     public void json(Request request, Response response) {
-        response.json("{\"data\": \"Hello World\"}");
+        response.json(Result.of("Hello World"));
     }
 
     public void path(Request request, Response response) {

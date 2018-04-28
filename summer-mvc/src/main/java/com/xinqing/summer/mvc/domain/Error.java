@@ -5,6 +5,8 @@ import java.io.Serializable;
 /**
  * 错误信息
  *
+ * 设计参考spring mvc的返回格式
+ *
  * Created by xuan on 2018/4/26
  */
 public class Error implements Serializable {
@@ -68,5 +70,16 @@ public class Error implements Serializable {
 
     public void setTimestamp(long timestamp) {
         this.timestamp = timestamp;
+    }
+
+    @Override
+    public String toString() {
+        return "Error{" +
+                "status=" + status +
+                ", message='" + message + '\'' +
+                ", exception='" + exception + '\'' +
+                ", path='" + path + '\'' +
+                ", timestamp=" + timestamp +
+                '}';
     }
 }

@@ -7,10 +7,10 @@ package com.xinqing.summer.mvc.json;
  */
 public class JsonFactory {
 
-    private static final Json fastJson = new FastJsonImpl();
+    private static final Json FAST_JSON = new FastJsonImpl();
 
     public static Json get() {
-        return fastJson;
+        return FAST_JSON;
     }
 
 }

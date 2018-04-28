@@ -18,13 +18,13 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpUtil;
 import io.netty.handler.codec.http.HttpVersion;
 import io.netty.handler.stream.ChunkedFile;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.activation.MimetypesFileTypeMap;
 import java.io.File;
 import java.io.IOException;
-import java.io.RandomAccessFile;
 
 /**
  * default http response
@@ -39,7 +39,7 @@ public class DefaultResponse implements Response {
     private final ChannelHandlerContext ctx;
     private final boolean keepAlive;
 
-    public DefaultResponse(ChannelHandlerContext ctx, boolean keepAlive) {
+    DefaultResponse(ChannelHandlerContext ctx, boolean keepAlive) {
         this.raw = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
         this.ctx = ctx;
         this.keepAlive = keepAlive;
@@ -94,22 +94,10 @@ public class DefaultResponse implements Response {
 
     @Override
     public void sendFile(File file) throws IOException {
-        sendFile(null, file);
-    }
-
-    @Override
-    public void sendFile(HttpHeaders headers, File file) throws IOException {
-        RandomAccessFile raf = new RandomAccessFile(file, "r");
-
-        long fileLength = raf.length();
+        long fileLength = file.length();
 
         // if you write a FullHttp* message it contains the whole body of the message
-        HttpResponse response;
-        if (headers == null) {
-            response = new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
-        } else {
-            response = new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK, headers);
-        }
+        HttpResponse response = new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK, raw.headers());
 
         // content-length
         HttpUtil.setContentLength(response, fileLength);
@@ -125,7 +113,7 @@ public class DefaultResponse implements Response {
 
         // Write the content.
         // HttpChunkedInput will write the end marker (LastHttpContent) for us.
-        ChannelFuture future = ctx.writeAndFlush(new HttpChunkedInput(new ChunkedFile(raf)), ctx.newProgressivePromise());
+        ChannelFuture future = ctx.writeAndFlush(new HttpChunkedInput(new ChunkedFile(file)), ctx.newProgressivePromise());
 
         future.addListener(new ChannelProgressiveFutureListener() {
             @Override
@@ -171,8 +159,13 @@ public class DefaultResponse implements Response {
     }
 
     private void setContentType(HttpResponse response, File file) {
-        MimetypesFileTypeMap mimeTypesMap = new MimetypesFileTypeMap();
-        response.headers().set(HttpHeaderNames.CONTENT_TYPE, mimeTypesMap.getContentType(file.getPath()));
+        String contentType = response.headers().get(HttpHeaderNames.CONTENT_TYPE);
+        // 如果已经设置过，则不会设置
+        if (StringUtils.isEmpty(contentType)) {
+            MimetypesFileTypeMap mimeTypesMap = new MimetypesFileTypeMap();
+            contentType = mimeTypesMap.getContentType(file.getPath());
+        }
+        response.headers().set(HttpHeaderNames.CONTENT_TYPE, contentType);
     }
 
 }

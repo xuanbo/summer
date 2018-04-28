@@ -126,7 +126,7 @@ public interface Request {
     <T> T json(Class<T> requireClazz);
 
     /**
-     * 文件上传
+     * 文件上传，会顺便提取http body中的内容，即初始化body()方法
      *
      * @return Map<String, List<FileUpload>>
      */

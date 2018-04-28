@@ -30,49 +30,43 @@ public class HttpExecution {
     public void execute(ChannelHandlerContext ctx, FullHttpRequest req) {
         Request request = new DefaultRequest(req);
         Response response = new DefaultResponse(ctx, HttpUtil.isKeepAlive(req));
-
-        String path = request.path();
-
         // 初始化请求上下文
         RequestContext.setup(request);
+        try {
+            // request execute
+            doExecute(request, response);
+        } catch (Exception e) {
+            LOG.warn("request handle error", e);
+            // failure handler
+            router.failureHandler().handle(request, response, e);
+        }
+        // 释放请求上下文
+        RequestContext.cleanup();
+    }
+
+    private void doExecute(Request request, Response response) {
+        String path = request.path();
 
         // 前置拦截
         List<Before> befores = router.lookup(path);
         for (Before before : befores) {
-            try {
-                if (!before.doBefore(request, response)) {
-                    // 释放请求上下文
-                    RequestContext.cleanup();
-                    return;
-                }
-            } catch (Exception e) {
-                // 异常处理
-                router.failureHandler().handle(request, response, e);
+            if (!before.doBefore(request, response)) {
+                return;
             }
         }
 
+        // 处理路由
         Handler handler;
         // 寻找到匹配的handler
         Route route = router.lookup(request.method(), path);
-
         if (route == null) {
             // not found
             handler = router.notFound();
         } else {
             handler = route.getHandler();
         }
-
         // do handle
-        try {
-            handler.handle(request, response);
-        } catch (Exception e) {
-            LOG.error("request handle error", e);
-            // 异常处理
-            router.failureHandler().handle(request, response, e);
-        }
-
-        // 释放请求上下文
-        RequestContext.cleanup();
+        handler.handle(request, response);
     }
 
 }
