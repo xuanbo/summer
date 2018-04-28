@@ -1,10 +1,10 @@
 # Summer Project
 
-Summer is a simple mvc lib base on [Netty4.x](https://github.com/netty/netty) for **study!!!**
+Summer是一个用于**学习交流**，基于[Netty4.x](https://github.com/netty/netty)的简单mvc库
 
-## Usage
+## 使用
 
-* quick start
+* 快速开始
 
 ```java
 public class Application {
@@ -28,7 +28,7 @@ public class Application {
 }
 ```
 
-* custom
+* 自定义
 
 ```java
 public class Application {
@@ -40,90 +40,90 @@ public class Application {
 
         Router router = summer.router();
 
-        // custom notFound handler
+        // 自定义notFound处理
         router.notFound((request, response) -> response.text("404"));
 
-        // custom failure handler
+        // 自定义错误处理
         router.failureHandler((request, response, t) -> response.text("500"));
 
-        // register routes
+        // 注册路由
         router.get("/example/text", controller::text);
         router.get("/example/json", controller::json);
 
-        // http server listen on 9000 and serve
+        // http服务监听9000端口，并启动服务
         summer.listen(9000).serve();
     }
 
 }
 ```
 
-## About
+## 关于
 
 ### Request
 
-#### Named parameters
+#### 命名参数
 
-As you can see, `:name` is a named parameter. You can get the value of a parameter by `request.paths().get("name")` method.
+显然，`:name`就是一个命名参数，可以通过`request.paths().get("name")`方法获取命名参数。
 
 ```
-Pattern: /user/:name
+模式匹配: /user/:name
 
-/user/zhangsan            match
-/user/lisi                match
-/user/wangwu/zhaoliu      no match
-/user/                    no match
+/user/zhangsan             匹配
+/user/lisi                 匹配
+/user/wangwu/zhaoliu       不匹配
+/user/                     不匹配
 ```
 
-**Note:** `:name` name must be [a-zA-Z], otherwise will be matched exactly!
+**注意:** `:name` name 必须为字母[a-zA-Z], 否则视为精确匹配!
 
-#### Before hook
+#### 前置钩子
 
-Ant pattern:
+Ant风格:
 
-* `?` match a character
-* `*` match one or more characters
-* `**` match one or more directories
+* `?` 匹配一个字符
+* `*` 匹配一个或多个字符
+* `**` 匹配一个或多个目录
 
-#### Request body
+#### 请求体
 
-method `request.body()` support `Content-Type`:
+`request.body()`方法支持下列`Content-Type`:
 
 * `multipart/form-data`
 * `application/x-www-form-urlencoded`
 
-As for `application/json`, use method `request.json()` instead of.
+对于`application/json`请求头, 使用`request.json()`方法即可。
 
-#### Multipart file
+#### 文件上传
 
 * `request.files()`
 * `request.file(name)`
 
-Then you can use `FileUpload` for all operations.
+拿到`FileUpload`对象，操作文件。
 
 ### Response
 
-#### Write response
+#### 写响应
 
 * `response.text(text)`
 * `response.json(json)`
 
-`Content-Type`(`text/plain` and `application/json`) will be added.
+`Content-Type`(`text/plain`和`application/json`)分别会被添加到响应头。
 
-#### File download
+#### 文件下载
 
-Now, easy to use:
+使用下面的方法:
 
 * `response.sendFile(file)`
 
-#### Redirect
+#### 重定向
 
-`response.redirect(targetUrl)` will set http status `302`, and add `Location` on http response header.
+`response.redirect(targetUrl)`将会设置http状态码为`302`，并添加`Location`到响应头。
 
-## Examples
+## 例子
 
-[Here](https://github.com/xuanbo/summer/tree/master/examples)
+[这里](https://github.com/xuanbo/summer/tree/master/examples)
 
-## Thanks
+## 特别感谢
 
 * [netty](https://github.com/netty/netty)
 * [spring-framework](https://github.com/spring-projects/spring-framework)
