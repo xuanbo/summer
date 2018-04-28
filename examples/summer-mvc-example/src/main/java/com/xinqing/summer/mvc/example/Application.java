@@ -40,7 +40,7 @@ public class Application {
                 // 发送文件
                 .get("/example/sendFile", controller::sendFile)
                 // 静态资源
-                .staticFile("/", "/developer/Code/summer")
+                .staticFile("/static", "/developer/Code/summer")
                 .listen(9000)
                 .serve();
     }

@@ -75,8 +75,10 @@ public class Summer {
     }
 
     public Summer staticFile(String staticPrefix, String staticPath) {
-        httpStaticFileHandler = new HttpStaticFileHandler(staticPrefix, staticPath);
-        LOG.info("static resource: '{}'", staticPrefix);
+        if (httpStaticFileHandler == null) {
+            httpStaticFileHandler = new HttpStaticFileHandler(staticPrefix, staticPath);
+            LOG.info("static resource: '{}'", staticPrefix);
+        }
         return this;
     }
 

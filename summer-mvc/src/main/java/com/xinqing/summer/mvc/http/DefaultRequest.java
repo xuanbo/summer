@@ -106,6 +106,29 @@ public class DefaultRequest implements Request {
     }
 
     @Override
+    public String path(String name) {
+        return paths().get(name);
+    }
+
+    @Override
+    public Integer pathInt(String name) {
+        String value = path(name);
+        if (value == null) {
+            return null;
+        }
+        return Integer.parseInt(value);
+    }
+
+    @Override
+    public Long pathLong(String name) {
+        String value = path(name);
+        if (value == null) {
+            return null;
+        }
+        return Long.parseLong(value);
+    }
+
+    @Override
     public void paths(Map<String, String> paths) {
         this.paths = paths;
     }
@@ -153,6 +176,33 @@ public class DefaultRequest implements Request {
             return null;
         }
         return values.get(0);
+    }
+
+    @Override
+    public Integer paramInt(String name) {
+        String value = param(name);
+        if (value == null) {
+            return null;
+        }
+        return Integer.parseInt(value);
+    }
+
+    @Override
+    public Long paramLong(String name) {
+        String value = param(name);
+        if (value == null) {
+            return null;
+        }
+        return Long.parseLong(value);
+    }
+
+    @Override
+    public Boolean paramBool(String name) {
+        String value = param(name);
+        if (value == null) {
+            return null;
+        }
+        return Boolean.parseBoolean(value);
     }
 
     @Override

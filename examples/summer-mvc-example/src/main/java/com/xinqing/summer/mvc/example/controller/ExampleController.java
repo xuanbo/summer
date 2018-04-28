@@ -54,7 +54,7 @@ public class ExampleController {
             LOG.info("{}", fileUpload.getFilename());
             try {
                 // 保存文件到本地
-                    fileUpload.renameTo(Paths.get("/file/" + fileUpload.getFilename()).toFile());
+                fileUpload.renameTo(Paths.get("/file/" + fileUpload.getFilename()).toFile());
             } catch (IOException e) {
                 LOG.warn("上传失败", e);
             }

@@ -39,6 +39,33 @@ public interface Request {
     Map<String, String> paths();
 
     /**
+     * 根据name获取path上的变量
+     * 例如/user/:id，当请求为/user/1时，则path(id)为1
+     *
+     * @param name the name of the pattern
+     * @return value，不存在为null
+     */
+    String path(String name);
+
+    /**
+     * 根据name获取path上的int型变量
+     * 例如/user/:id，当请求为/user/1时，则path(id)为1
+     *
+     * @param name the name of the pattern
+     * @return Integer value of the pattern
+     */
+    Integer pathInt(String name);
+
+    /**
+     * 根据name获取path上的long型变量
+     * 例如/user/:id，当请求为/user/1时，则path(id)为1
+     *
+     * @param name the name of the pattern
+     * @return Long value of the pattern
+     */
+    Long pathLong(String name);
+
+    /**
      * 设置path上的变量，例如/user/:id，当请求为/user/1时，框架自动设置paths为{id:1}
      *
      * @param paths Map<String, String>
@@ -65,10 +92,48 @@ public interface Request {
      * 例如：/a/b?c=1&d=2&c=3；则d=2，c=1
      * 没有对应的参数时，会返回null
      *
+     * @see Request#paramValues(java.lang.String)
+     *
      * @param name the name of the parameter
      * @return single value of the parameter
      */
     String param(String name);
+
+    /**
+     * 获取queryString上的参数值
+     * 例如：/a/b?c=1&d=2&c=3；则d=2，c=1
+     * 没有对应的参数时，会返回null
+     *
+     * @see Request#param(java.lang.String)
+     *
+     * @param name the name of the parameter
+     * @return Integer value of the parameter
+     */
+    Integer paramInt(String name);
+
+    /**
+     * 获取queryString上的参数值
+     * 例如：/a/b?c=1&d=2&c=3；则d=2，c=1
+     * 没有对应的参数时，会返回null
+     *
+     * @see Request#param(java.lang.String)
+     *
+     * @param name the name of the parameter
+     * @return Long value of the parameter
+     */
+    Long paramLong(String name);
+
+    /**
+     * 获取queryString上的参数值
+     * 例如：/a/b?c=1&d=2&c=3；则d=2，c=1
+     * 没有对应的参数时，会返回null
+     *
+     * @see Request#param(java.lang.String)
+     *
+     * @param name the name of the parameter
+     * @return Boolean value of the parameter
+     */
+    Boolean paramBool(String name);
 
     /**
      * 获取queryString上的参数值
@@ -112,12 +177,16 @@ public interface Request {
     /**
      * 获取http body中的内容，会覆盖相同的name，不支持application/json
      *
+     * @see Request#json(java.lang.Class)
+     *
      * @return Map<String, String>
      */
     Map<String, String> body();
 
     /**
      * 当请求头为application/json时，可以获取将body转为需要对象
+     *
+     * @see Request#body()
      *
      * @param requireClazz 将body转为需要对象
      * @param <T> T
