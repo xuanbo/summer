@@ -17,6 +17,8 @@ import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpUtil;
 import io.netty.handler.codec.http.HttpVersion;
+import io.netty.handler.codec.http.cookie.Cookie;
+import io.netty.handler.codec.http.cookie.ServerCookieEncoder;
 import io.netty.handler.stream.ChunkedFile;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -147,6 +149,12 @@ public class DefaultResponse implements Response {
         headers().set(HttpHeaderNames.LOCATION, target);
         // send response
         end();
+    }
+
+    @Override
+    public void setCookie(Cookie cookie) {
+        String value = ServerCookieEncoder.LAX.encode(cookie);
+        headers().add(HttpHeaderNames.SET_COOKIE, value);
     }
 
     private void end() {

@@ -39,6 +39,9 @@ public class Application {
                 .post("/example/parseJson", controller::parseJson)
                 // 发送文件
                 .get("/example/sendFile", controller::sendFile)
+                // cookie
+                .get("/example/setCookie", controller::setCookie)
+                .get("/example/getCookie", controller::getCookie)
                 // 静态资源
                 .staticFile("/static", "/developer/Code/summer")
                 .listen(9000)

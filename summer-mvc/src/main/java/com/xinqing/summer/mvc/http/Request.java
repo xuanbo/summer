@@ -3,10 +3,12 @@ package com.xinqing.summer.mvc.http;
 import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpMethod;
+import io.netty.handler.codec.http.cookie.Cookie;
 import io.netty.handler.codec.http.multipart.FileUpload;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * http request
@@ -208,5 +210,27 @@ public interface Request {
      * @return List<FileUpload>
      */
     List<FileUpload> file(String name);
+
+    /**
+     * 获取所有cookie，不存在返回空集合
+     *
+     * @return Set<Cookie>
+     */
+    Set<Cookie> cookies();
+
+    /**
+     * 根据name获取cookie，不存在返回null
+     *
+     * @param name the name of the cookie
+     * @return the value of the cookie
+     */
+    Cookie cookies(String name);
+
+    /**
+     * 是否keepAlive
+     *
+     * @return keepAlive
+     */
+    boolean keepAlive();
 
 }

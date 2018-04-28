@@ -8,6 +8,9 @@ import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpHeaderValues;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpMethod;
+import io.netty.handler.codec.http.HttpUtil;
+import io.netty.handler.codec.http.cookie.Cookie;
+import io.netty.handler.codec.http.cookie.ServerCookieDecoder;
 import io.netty.handler.codec.http.multipart.Attribute;
 import io.netty.handler.codec.http.multipart.FileUpload;
 import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder;
@@ -25,6 +28,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -65,6 +69,13 @@ public class DefaultRequest implements Request {
      * request body中提取的文件对象
      */
     private Map<String, List<FileUpload>> fileUploads;
+
+    /**
+     * request header中提取的cookies
+     */
+    private Set<Cookie> cookies;
+
+    private Boolean keepAlive;
 
     DefaultRequest(FullHttpRequest raw) {
         this.raw = raw;
@@ -297,6 +308,41 @@ public class DefaultRequest implements Request {
     @Override
     public List<FileUpload> file(String name) {
         return files().getOrDefault(name, Collections.emptyList());
+    }
+
+    @Override
+    public Set<Cookie> cookies() {
+        if (cookies == null) {
+            String cookie = header(HttpHeaderNames.COOKIE.toString());
+            if (StringUtils.isBlank(cookie)) {
+                cookies = Collections.emptySet();
+                return cookies;
+            }
+            cookies = ServerCookieDecoder.LAX.decode(cookie);
+        }
+        return cookies;
+    }
+
+    @Override
+    public Cookie cookies(String name) {
+        if (StringUtils.isBlank(name)) {
+            return null;
+        }
+        // 遍历cookies
+        for (Cookie cookie : cookies()) {
+            if (name.equals(cookie.name())) {
+                return cookie;
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public boolean keepAlive() {
+        if (keepAlive == null) {
+            keepAlive = HttpUtil.isKeepAlive(raw);
+        }
+        return keepAlive;
     }
 
     private boolean isApplicationJson() {

@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.xinqing.summer.mvc.domain.Result;
 import com.xinqing.summer.mvc.http.Request;
 import com.xinqing.summer.mvc.http.Response;
+import io.netty.handler.codec.http.cookie.DefaultCookie;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -73,6 +74,15 @@ public class ExampleController {
             LOG.error("send file error", e);
             response.text("send file error");
         }
+    }
+
+    public void setCookie(Request request, Response response) {
+        response.setCookie(new DefaultCookie("hello", "world"));
+        response.text("set cookie ok");
+    }
+
+    public void getCookie(Request request, Response response) {
+        response.json(Result.of(request.cookies("hello")));
     }
 }
 

@@ -3,6 +3,7 @@ package com.xinqing.summer.mvc.http;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.cookie.Cookie;
 
 import java.io.File;
 import java.io.IOException;
@@ -84,5 +85,12 @@ public interface Response {
      * @param target 重定向路径
      */
     void redirect(String target);
+
+    /**
+     * 设置cookie
+     *
+     * @param cookie Cookie
+     */
+    void setCookie(Cookie cookie);
 
 }
