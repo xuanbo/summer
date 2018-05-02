@@ -8,6 +8,7 @@ import com.xinqing.summer.mvc.http.Response;
  *
  * Created by xuan on 2018/4/27
  */
+@FunctionalInterface
 public interface Before {
 
     /**

@@ -5,7 +5,7 @@ import org.apache.commons.lang3.StringUtils;
 /**
  * ant matcher
  *
- * Shiro - Ant
+ * 注：代码来源于Shiro
  *
  * Created by xuan on 2018/4/27
  */

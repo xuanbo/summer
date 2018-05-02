@@ -44,12 +44,14 @@ import java.util.concurrent.atomic.AtomicInteger;
  * 
  * @author maijunsheng
  * @version 创建时间：2013-6-20
- * 
+ *
+ * 注：代码来源于motan，地址：https://github.com/weibocom/motan/blob/master/motan-core/src/main/java/com/weibo/api/motan/core/StandardThreadExecutor.java
  */
 public class StandardThreadExecutor extends ThreadPoolExecutor {
 
 	public static final int DEFAULT_MIN_THREADS = 20;
 	public static final int DEFAULT_MAX_THREADS = 200;
+
 	/**
 	 * 1 minutes
 	 */
@@ -151,10 +153,16 @@ public class StandardThreadExecutor extends ThreadPoolExecutor {
  * 
  * @author maijunsheng
  *
+ * 注：代码来源于motan，地址：https://github.com/weibocom/motan/blob/master/motan-core/src/main/java/com/weibo/api/motan/core/DefaultThreadFactory.java
  */
 class ExecutorQueue extends LinkedTransferQueue<Runnable> {
+
 	private static final long serialVersionUID = -265236426751004839L;
-	StandardThreadExecutor threadPoolExecutor;
+
+    /**
+     * 当前线程池实例
+     */
+	private StandardThreadExecutor threadPoolExecutor;
 
 	public ExecutorQueue() {
 		super();
@@ -189,6 +197,7 @@ class ExecutorQueue extends LinkedTransferQueue<Runnable> {
 		}
 		// if we have less threads than maximum force creation of a new
 		// thread
+		// 主要是这里，当线程没有到达最大数量，则返回false，则workQueue offer失败，从而会创建线程池。
 		if (poolSize < threadPoolExecutor.getMaximumPoolSize()) {
 			return false;
 		}
