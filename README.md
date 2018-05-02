@@ -10,7 +10,7 @@ Summer is a simple mvc lib base on [Netty4.x](https://github.com/netty/netty) fo
 public class Application {
 
     public static void main(String[] args) {
-        Summers.summer()
+        Summer.me()
                 .before("/example/*", (request, response) -> {
                     log.debug("path: {}", request.path());
                     // pass
@@ -36,7 +36,8 @@ public class Application {
     public static void main(String[] args) {
         ExampleController controller = new ExampleController();
 
-        Summer summer = Summers.summer();
+        // summer instance
+        Summer summer = Summer.me();
 
         Router router = summer.router();
 

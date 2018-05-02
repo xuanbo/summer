@@ -31,8 +31,6 @@ public class RouterImpl implements Router {
 
     private static final Logger LOG = LoggerFactory.getLogger(RouterImpl.class);
 
-    private static final String PATH_START = "/";
-
     /**
      * AntMatcher
      */

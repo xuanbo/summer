@@ -10,7 +10,7 @@ Summer是一个用于**学习交流**，基于[Netty4.x](https://github.com/nett
 public class Application {
 
     public static void main(String[] args) {
-        Summers.summer()
+        Summer.me()
                 .before("/example/*", (request, response) -> {
                     log.debug("path: {}", request.path());
                     // pass
@@ -36,7 +36,8 @@ public class Application {
     public static void main(String[] args) {
         ExampleController controller = new ExampleController();
 
-        Summer summer = Summers.summer();
+        // 获取一个summer实例
+        Summer summer = Summer.me();
 
         Router router = summer.router();
 

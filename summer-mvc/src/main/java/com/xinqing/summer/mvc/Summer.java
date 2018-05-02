@@ -40,6 +40,14 @@ public class Summer {
      */
     private HttpServerHandler httpServerHandler = new HttpServerHandler(new HttpExecution(router));
 
+    private Summer() {
+    }
+
+    public static Summer me() {
+        LOG.info("summer *_*!!!");
+        return new Summer();
+    }
+
     public Router router() {
         return router;
     }
