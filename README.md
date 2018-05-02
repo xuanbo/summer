@@ -142,3 +142,4 @@ For example, request `http://ip:9000/static/some.txt` will be mapped to the loca
 * [spring-framework](https://github.com/spring-projects/spring-framework)
 * [blade](https://github.com/lets-blade/blade)
 * [shiro](https://github.com/apache/shiro)
+* [motan](https://github.com/weibocom/motan)

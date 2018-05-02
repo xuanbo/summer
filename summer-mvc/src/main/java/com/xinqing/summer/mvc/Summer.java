@@ -4,6 +4,8 @@ import com.xinqing.summer.mvc.bootstrap.HttpPipelineInitializer;
 import com.xinqing.summer.mvc.bootstrap.HttpServer;
 import com.xinqing.summer.mvc.bootstrap.HttpServerHandler;
 import com.xinqing.summer.mvc.bootstrap.HttpStaticFileHandler;
+import com.xinqing.summer.mvc.concurrent.StandardThreadExecutor;
+import com.xinqing.summer.mvc.constant.SummerConstants;
 import com.xinqing.summer.mvc.http.HttpExecution;
 import com.xinqing.summer.mvc.http.handler.Before;
 import com.xinqing.summer.mvc.http.handler.Handler;
@@ -17,6 +19,7 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ThreadPoolExecutor;
 
 /**
  * bootstrap
@@ -28,7 +31,7 @@ public class Summer {
     private static final Logger LOG = LoggerFactory.getLogger(Summer.class);
 
     private final Router router = new RouterImpl();
-    private int port = 9000;
+    private int port = SummerConstants.DEFAULT_PORT;
 
     /**
      * 处理http静态资源
@@ -38,14 +41,23 @@ public class Summer {
     /**
      * 处理业务http请求
      */
-    private HttpServerHandler httpServerHandler = new HttpServerHandler(new HttpExecution(router));
+    private HttpServerHandler httpServerHandler;
 
     private Summer() {
+        this(new StandardThreadExecutor());
+    }
+
+    private Summer(ThreadPoolExecutor threadPoolExecutor) {
+        this.httpServerHandler = new HttpServerHandler(new HttpExecution(router), threadPoolExecutor);
     }
 
     public static Summer me() {
+        return me(new StandardThreadExecutor());
+    }
+
+    public static Summer me(ThreadPoolExecutor threadPoolExecutor) {
         LOG.info("summer *_*!!!");
-        return new Summer();
+        return new Summer(threadPoolExecutor);
     }
 
     public Router router() {
