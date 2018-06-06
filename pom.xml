@@ -16,6 +16,7 @@
 
     <modules>
         <module>summer-mvc</module>
+        <module>summer-admin</module>
         <module>examples</module>
     </modules>
 
